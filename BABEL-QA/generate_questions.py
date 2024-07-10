@@ -94,8 +94,8 @@ def generate_all_possible_questions(id, filter_seg, attribute, concept, seq_moti
 
     question = {}
     question['babel_id'] = id
-    question['program'] = [{'inputs': [], 'function': 'scene', 'value_inputs': []}, 
-                                           {'inputs': [0], 'function': f'filter_{attribute}', 'value_inputs': [concept]}]
+    question['program'] = [{'inputs': [], 'function': 'scene', 'value_inputs': []},
+                           {'inputs': [0], 'function': f'filter_{attribute}', 'value_inputs': [concept]}]
     question['filter_answer_0'] = filter_seg
     used_concepts[filter_seg].append(concept)
 
@@ -140,11 +140,11 @@ def create_questions(motion_concepts, data_split_file):
 
     if data_split_file is None:
         babel_id_questions = questions_by_babel_id(questions)
-        remove_redundant_between_questions(questions, babel_id_questions)
-        remove_questions_with_infrequent_concepts(questions)
-        questions, babel_id_questions = balance_co_occurances(questions)
-        split_question_ids = split_dataset(questions, babel_id_questions)
-        split_question_ids = select_questions_with_common_concepts(questions, split_question_ids)
+        remove_redundant_between_questions(questions, babel_id_questions) # Removed 258 redundant between questions.
+        remove_questions_with_infrequent_concepts(questions) # Removed 95 questions with infrequent concepts.
+        questions, babel_id_questions = balance_co_occurances(questions) #Removed 2410 questions from balancing co-occurances.
+        split_question_ids = split_dataset(questions, babel_id_questions) # 2631: 1806, 375, 450
+        split_question_ids = select_questions_with_common_concepts(questions, split_question_ids) # 1675, 362, 419
         with open('split_question_ids.json', 'w') as f:
             json.dump(split_question_ids, f, indent=4)
     else:
@@ -162,8 +162,8 @@ def create_questions(motion_concepts, data_split_file):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data_dir', type=str, required=True, help='Root directory of BABEL-QA dataset')
-    parser.add_argument('--data_split_file', type=str, default=None, required=False, help='Location of train, val, and test question id splits')
+    parser.add_argument('--data_dir', default="data/babel-qa", help='Root directory of BABEL-QA dataset')
+    parser.add_argument('--data_split_file', default=None, required=False, help='Location of train, val, and test question id splits')
     args = parser.parse_args()
 
     motion_concepts = json.load(open(osp.join(args.data_dir, 'motion_concepts.json')))

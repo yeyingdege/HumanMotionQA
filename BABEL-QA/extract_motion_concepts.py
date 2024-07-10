@@ -11,7 +11,6 @@ from os.path import isfile
 
 import numpy as np
 
-import sys
 
 non_ambiguous_actions = ['bow', 'cartwheel', 'catch', 'clap', 'cough', 'crawl', 'crouch', 'dribble', 'drink', 'duck', 'eat', 'fall', 'fight', 'fire gun', 'fish', 'fist bump', 'flail arms', 'flap', 'flip', 'golf', 'handstand', 'hop', 'hug', 'jog', 'juggle', 'jump', 'jump rope', 'jumping jacks', 'kick', 'kneel', 'knock', 'leap', 'lift something', 'limp', 'lunge', 'march', 'mix', 'moonwalk', 'place something', 'punch', 'rake', 'run', 'salute', 'shuffle', 'sit', 'skate', 'skip', 'sneeze', 'squat', 'stand up', 'take/pick something up', 'throw', 'tie', 'tiptoe', 'walk', 'wave', 'yawn', 'transition']
 body_parts = ['left hand', 'right hand', 'left arm', 'right arm', 'left leg', 'right leg', 'left foot', 'right foot']
@@ -140,14 +139,14 @@ def process_split(params, annotations, out_labels):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--babel_root', type=str, required=True, help='Root directory of the BABEL dataset')
-    parser.add_argument('--data_dir', type=str, required=True, help='Root directory of BABEL-QA dataset')
+    parser.add_argument('--babel_root', default="data/babel_v1.0_release", help='Root directory of the BABEL dataset')
+    parser.add_argument('--data_dir', default="data/babel-qa", help='Root directory of BABEL-QA dataset')
     args = parser.parse_args()
     params = vars(args)
 
     out_labels = {}
     for spl in ['train', 'val']:
-        ann = json.load(open(ospj(params['babel_root'], f'{spl}.json')))
+        ann = json.load(open(ospj(params['babel_root'], f'{spl}.json'))) # train 6615, val 2193
         annotations = [ann[sid] for sid in ann]
 
         process_split(params, annotations, out_labels)
@@ -156,7 +155,7 @@ def main():
         os.makedirs(params['data_dir'])
     
     with open(ospj(params['data_dir'], 'motion_concepts.json'), 'w') as f:
-        json.dump(out_labels, f, indent=4)
+        json.dump(out_labels, f, indent=4) # 6230 after processing
     
 if __name__ == '__main__':
     main()

@@ -3,3 +3,6 @@ NSPose/batch_out_logs/
 NSPose/dumps/
 tags
 *.pyc
+mqa
+data
+checkpoints

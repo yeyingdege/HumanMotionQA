@@ -1,10 +1,8 @@
-import sys, os
-
+import os
 import json
 import os.path as osp
 
 import glob
-import os
 import argparse
 import time
 
@@ -562,10 +560,10 @@ def process_amass_data(data_dir, babel_root, amass_root, smplh_root):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--data_dir', type=str, required=True, help='Root directory of BABEL-QA dataset')
-    parser.add_argument('--babel_root', type=str, required=True, help='Root directory of the BABEL dataset')
-    parser.add_argument('--amass_root', type=str, required=True, help='Root directory of raw AMASS dataset.')
-    parser.add_argument('--smplh_root', type=str, required=True, help='Root directory of the SMPL+H body model.')
+    parser.add_argument('--data_dir', default="data/babel-qa", help='Root directory of BABEL-QA dataset')
+    parser.add_argument('--babel_root', default="data/babel_v1.0_release", help='Root directory of the BABEL dataset')
+    parser.add_argument('--amass_root', default="data/AMASS", help='Root directory of raw AMASS dataset.')
+    parser.add_argument('--smplh_root', default="checkpoints/smplh", help='Root directory of the SMPL+H body model.')
     args = parser.parse_args()
 
     process_amass_data(args.data_dir, args.babel_root, args.amass_root, args.smplh_root)

@@ -32,8 +32,9 @@ We split our repository into two sections, one for our proposed [`BABEL-QA`](BAB
 Run the following commands to install necessary dependencies.
 
 ```bash
-  conda create -n human_motion_qa python=3.7.11
-  conda activate human_motion_qa
+  python -m venv mqa
+  source mqa/bin/activate
+  export SKLEARN_ALLOW_DEPRECATED_SKLEARN_PACKAGE_INSTALL=True
   pip install -r requirements.txt
 ```
 
