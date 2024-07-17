@@ -1,4 +1,7 @@
 from jacinle.utils.container import GView
+import sys, os
+sys.path.append(os.getcwd())
+sys.path.append(os.path.join(os.getcwd(), "NSPose"))
 from models.model import make_motion_reasoning_configs, MotionReasoningModel
 
 import numpy as np

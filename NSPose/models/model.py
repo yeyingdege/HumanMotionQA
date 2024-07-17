@@ -3,6 +3,9 @@ import jactorch.nn as jacnn
 
 from jacinle.logging import get_logger
 from jacinle.utils.container import G
+import sys, os
+sys.path.append(os.getcwd())
+sys.path.append(os.path.join(os.getcwd(), "NSPose"))
 from datasets.definition import gdef
 
 

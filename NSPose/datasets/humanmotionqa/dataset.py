@@ -1,6 +1,6 @@
 import os.path as osp
 
-import nltk
+import os
 import numpy as np
 from PIL import Image
 
@@ -14,13 +14,70 @@ from datasets.humanmotionqa.utils import nsclseq_to_nscltree, nsclseq_to_nsclqss
 
 import numpy as np
 import math
-
+import random
+from matplotlib import pyplot as plt
 
 
 logger = get_logger(__file__)
 
 __all__ = ['NSTrajDataset']
-        
+
+
+def vis_joints_fig(babel_id, joints, text, data_dir, center_subject=True, sample_seq=False):
+    # joints: num_segs, 3, Seq=75, V=22, 1 (9, 3, 75, 22, 1)
+    joints = joints.squeeze(-1)
+    if len(joints.shape) == 4:
+        joints = joints.transpose(0, 2, 3, 1) # (num_segs, 75, 22, 3)
+    elif len(joints.shape) == 3:
+        joints = np.expand_dims(joints, axis=0)
+
+    if center_subject: joints[:,:,:,:2] =  joints[:,:,:,:2] - joints[:,:,:1,:2]
+    # randomly sample 12 sequence
+    if sample_seq:
+        seq_idx = sorted(random.sample(range(joints.shape[1]), 12))
+        joints = joints[:, seq_idx]
+
+    # visualize_out_dir = osp.join(data_dir, 'vis', 'joint_vis', f'{babel_id}_{time.strftime("%Y-%m-%d-%H-%M-%S")}')
+    visualize_out_dir = osp.join(data_dir, 'vis', 'joint_vis')
+
+    if not osp.exists(visualize_out_dir):
+        os.makedirs(visualize_out_dir)
+    
+    sample_cmp = random.sample(range(joints.shape[0]), 1)
+    joints = joints[sample_cmp]
+    vals = joints # K X T X 24 X 3, K represents how many skeleton showing in same figure(K=2: show gt and generation)
+    num_cmp = vals.shape[0]
+
+    color_list = ['#27AE60', '#E74C3C', '#E76F51', '#F4A261'] # green, red, red orange, soft orange
+    if num_cmp == 1:
+        # color_list = ['#E74C3C'] # Prediction lnly setting, use red color for the predicted skeleton 
+        # color_list = ['#004385'] # dark blue
+        color_list = ['#000000'] # black
+    # SMPL connections 22 joints 
+    connections = [[0, 1], [0, 2], [0, 3], [1, 4], [2, 5], [3, 6], [4, 7], [5, 8], [6, 9], [7, 10], [8, 11], [9, 12], [9, 13], [9, 14],
+                [12, 15], [13, 16], [14, 17], [16, 18], [17, 19], [18, 20], [19, 21]]
+
+    figsize=(12*num_cmp, 3*num_cmp)
+    line_w = 0.5*num_cmp
+    fig, axs = plt.subplots(num_cmp, vals.shape[1], figsize=figsize, sharey=True)
+    plt.subplots_adjust(wspace=0)
+
+    for cmp_idx in range(num_cmp):
+        for ind, ax in enumerate(axs):
+            for p_idx, j_idx in connections:
+                curr_x = [vals[cmp_idx][ind, j_idx, 1], vals[cmp_idx][ind, p_idx, 1]]
+                curr_y = [vals[cmp_idx][ind, j_idx, 2], vals[cmp_idx][ind, p_idx, 2]]
+                ax.plot(curr_x, curr_y, lw=line_w, c=color_list[cmp_idx])
+            ax.set_axis_off()
+            ax.set_ylim(0, 2)
+            ax.set_xlim(-0.6, 0.6)
+            ax.set_aspect('equal', adjustable='box')
+    axs[0].text(0, -1, text)
+    plt.tight_layout()
+    fig.savefig(osp.join(visualize_out_dir, f'joints_{babel_id}.png'))
+    plt.cla()
+    plt.close()
+
 
 class NSTrajDatasetUnwrapped(FilterableDatasetUnwrapped):
     def __init__(self, data_dir, data_split_file, split, no_gt_segments, num_frames_per_seg, overlapping_frames, max_frames=150):
@@ -142,7 +199,8 @@ class NSTrajDatasetUnwrapped(FilterableDatasetUnwrapped):
             
             feed_dict.joints = joints_combined
             feed_dict.num_segs = num_segments
-            
+        text = f"{feed_dict.question_text}\n{feed_dict.answer}"
+        vis_joints_fig(feed_dict.babel_id, joints_combined, text, "data/babel-qa", sample_seq=True)
         return feed_dict.raw()
     
     def __len__(self):
